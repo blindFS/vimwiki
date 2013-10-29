@@ -1112,6 +1112,36 @@ endfunction "}}}
 
 " }}}
 
+function! s:process_tag_pre_pygments(line, pre) "{{{
+  if !executable('pygmentize')
+    return s:process_tag_pre(a:line, a:pre)
+  endif
+  let lines = []
+  let pre = a:pre
+  let processed = 0
+  if !pre[0] && a:line =~ '^\s*{{{'
+    let s:syntax = matchstr(a:line, 'class=.\zs\w\+')
+    let s:syntax = s:syntax == "" ? "text" : s:syntax
+    if exists("g:vimwiki_code_syntax_map['".s:syntax."']")
+      let s:syntax = g:vimwiki_code_syntax_map[s:syntax]
+    endif
+    let s:lines_pre = ""
+    let pre = [1, len(matchstr(a:line, '^\s*\ze{{{'))]
+    let processed = 1
+  elseif pre[0] && a:line =~ '^\s*}}}\s*$'
+    let pre = [0, 0]
+    let processed = 1
+    redir! > ~/tmp/.pretemp
+    silent! echo s:lines_pre
+    redir END
+    let lines = split(system("pygmentize -l ".s:syntax." -f html ~/tmp/.pretemp"),'\n')
+  elseif pre[0]
+    let processed = 1
+    let s:lines_pre .= a:line."\n"
+  endif
+  return [processed, lines, pre]
+endfunction "}}}
+
 " WIKI2HTML "{{{
 function! s:parse_line(line, state) " {{{
   let state = {}
@@ -1177,7 +1207,7 @@ function! s:parse_line(line, state) " {{{
 
   " pres "{{{
   if !processed
-    let [processed, lines, state.pre] = s:process_tag_pre(line, state.pre)
+    let [processed, lines, state.pre] = s:process_tag_pre_pygments(line, state.pre)
     " pre is just fine to be in the list -- do not close list item here.
     " if processed && len(state.lists)
       " call s:close_tag_list(state.lists, lines)
