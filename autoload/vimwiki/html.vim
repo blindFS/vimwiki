@@ -1122,7 +1122,7 @@ function! s:process_tag_pre_pygments(line, pre) "{{{
   if !pre[0] && a:line =~ '^\s*{{{'
     let s:syntax = matchstr(a:line, 'class=.\zs\w\+')
     let s:syntax = s:syntax == "" ? "text" : s:syntax
-    if exists("g:vimwiki_code_syntax_map['".s:syntax."']")
+    if exists('g:vimwiki_code_syntax_map[s:syntax]')
       let s:syntax = g:vimwiki_code_syntax_map[s:syntax]
     endif
     let s:lines_pre = ""
@@ -1158,7 +1158,8 @@ function! s:parse_line(line, state) " {{{
 
   let res_lines = []
 
-  let line = s:safe_html(a:line)
+  " let line = s:safe_html(a:line)
+  let line = a:line
 
   let processed = 0
 
