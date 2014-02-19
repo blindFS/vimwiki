@@ -1134,7 +1134,9 @@ function! s:process_tag_pre_pygments(line, pre) "{{{
     redir! > ~/tmp/.pretemp
     silent! echo s:lines_pre
     redir END
-    let lines = split(system("pygmentize -l ".s:syntax." -f html ~/tmp/.pretemp"),'\n')
+    " for unicode
+    call system("pygmentize -l ".s:syntax." -f html -o ~/tmp/.pretemp.html ~/tmp/.pretemp")
+    let lines = split(system("cat ~/tmp/.pretemp.html"),'\n')
   elseif pre[0]
     let processed = 1
     let s:lines_pre .= a:line."\n"
