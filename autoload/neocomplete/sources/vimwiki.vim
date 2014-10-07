@@ -17,6 +17,7 @@ function! s:source.gather_candidates(context)
     let prefix = matchstr(line, '.*\/')
     let end = match(line, '}}$')
     let a:context.complete_str = line[len(prefix): end-1]
+    let a:context.complete_pos = start+len(prefix)
     let path = g:vimwiki_list[0].path_html . prefix
     let output = system('ls ' . path)
     if output =~ 'No such file or directory'
